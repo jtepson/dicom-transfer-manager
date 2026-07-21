@@ -5,6 +5,10 @@ import com.prism.dicomtransfer.service.DirectoryScannerService;
 import com.prism.dicomtransfer.model.ConnectionTestResult;
 import com.prism.dicomtransfer.model.TransferConfiguration;
 import com.prism.dicomtransfer.service.ConnectionTestService;
+import com.prism.dicomtransfer.model.TransferProgress;
+import com.prism.dicomtransfer.model.TransferResult;
+import com.prism.dicomtransfer.service.TransferEngineService;
+import com.prism.dicomtransfer.service.TransferListener;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -52,9 +56,14 @@ public class MainController {
     private Instant scanStartedAt;
 
     private final ConnectionTestService connectionTestService =
-        new ConnectionTestService();
+            new ConnectionTestService();
 
     private Task<ConnectionTestResult> activeConnectionTask;
+
+    private final TransferEngineService transferEngineService =
+            new TransferEngineService();
+
+    private Task<TransferResult> activeTransferTask;
 
     @FXML
     private TextField sourceDirectoryField;
