@@ -34,11 +34,7 @@ public class TransferEngineService {
 
     private static final long PROCESS_TIMEOUT_MINUTES = 30;
 
-    /*
-     * Windows allows a command line of roughly 32,767 characters.
-     * Stay below that limit to leave room for Java and ProcessBuilder
-     * quoting/escaping.
-     */
+    // Windows allows a command line of roughly 32,767 characters. Stay below that limit to leave room for Java and ProcessBuilder quoting/escaping.
     private static final int SAFE_WINDOWS_COMMAND_LENGTH = 28_000;
 
     private final Set<Process> activeProcesses =
@@ -50,6 +46,13 @@ public class TransferEngineService {
     private final Object transferStateLock = new Object();
     
     private volatile boolean stopRequested;
+
+    private volatile TransferConfiguration activeConfiguration;
+    private volatile Instant activeStartedAt;
+    private final AtomicLong activeSuccessfulFileCount = new AtomicLong();
+    private final AtomicLong activeFailedFileCount = new AtomicLong();
+    private volatile long activeTotalFiles;
+    private volatile TransferListener activeListener;
 
     public Task<TransferResult> createTransferTask(
             TransferConfiguration configuration,
