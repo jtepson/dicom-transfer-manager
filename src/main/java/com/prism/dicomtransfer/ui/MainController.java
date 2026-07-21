@@ -688,17 +688,18 @@ public class MainController {
 
     @FXML
     private void stopTransfer() {
-        Process process = activeProcess.getAndSet(null);
 
-        if (process != null && process.isAlive()) {
-            process.destroy();
+        if (activeTransferTask == null) {
+            return;
         }
 
-        stopButton.setDisable(true);
-        startButton.setDisable(false);
-        transferStatusLabel.setText("Stopped");
+        appendLog("Stop requested. Waiting for active batches to finish...");
 
-        appendLog("Stop requested.");
+        transferStatusLabel.setText("Stopping");
+
+        stopButton.setDisable(true);
+
+        transferEngineService.requestStop();
     }
 
     @FXML
