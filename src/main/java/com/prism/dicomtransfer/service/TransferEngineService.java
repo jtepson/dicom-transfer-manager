@@ -47,6 +47,8 @@ public class TransferEngineService {
     private final TransferStateService transferStateService =
             new TransferStateService();
 
+    private final Object transferStateLock = new Object();
+    
     private volatile boolean stopRequested;
 
     public Task<TransferResult> createTransferTask(
@@ -312,11 +314,7 @@ public class TransferEngineService {
             }
 
             if (stopRequested) {
-                /*
-                 * Do not mark an interrupted batch as sent or permanently failed.
-                 * Its paths remain absent from sent_files.txt and will therefore
-                 * be available on the next scan/resume.
-                 */
+                // Do not mark an interrupted batch as sent or permanently failed. Its paths remain absent from sent_files.txt and will therefore be available on the next scan/resume.
                 listener.onLog(
                         "Worker "
                                 + workerNumber
@@ -378,6 +376,16 @@ public class TransferEngineService {
                     startedAt,
                     listener
             );
+
+            saveTransferState(
+                    configuration,
+                    totalFiles,
+                    successfulFileCount.get(),
+                    failedFileCount.get(),
+                    TransferState.Status.RUNNING,
+                    startedAt,
+                    listener
+            );
         }
     }
 
@@ -418,10 +426,7 @@ public class TransferEngineService {
                         finalOutput.append(line).append(' ');
                     }
 
-                    /*
-                     * DCMTK can be verbose. Log warnings and errors while
-                     * suppressing routine per-instance output.
-                     */
+                    // DCMTK can be verbose. Log warnings and errors while suppressing routine per-instance output.
                     String lowercase = line.toLowerCase(Locale.ROOT);
 
                     if (
@@ -695,7 +700,9 @@ public class TransferEngineService {
         );
 
         try {
-            transferStateService.save(state);
+            synchronized (transferStateLock) {
+                transferStateService.save(state);
+            }
         } catch (IOException exception) {
             listener.onLog(
                     "Could not save transfer state: "
