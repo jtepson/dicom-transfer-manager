@@ -312,6 +312,35 @@ public class MainController {
 
             latestScanResult = activeScanTask.getValue();
 
+            if (transferStateService
+                    .stateExists(pathOrCurrentDirectory(workDirectoryField.getText()))) {
+
+                appendLog("Resume scan complete.");
+
+                if (latestScanResult.remainingFiles().isEmpty()) {
+                    appendLog("Nothing left to transfer.");
+
+                    try {
+                        transferStateService.delete(
+                                pathOrCurrentDirectory(workDirectoryField.getText())
+                        );
+                    } catch (IOException ignored) {
+                    }
+
+                } else {
+
+                    appendLog(
+                            String.format(
+                                    Locale.US,
+                                    "%,d files remain. Ready to resume.",
+                                    latestScanResult.remainingFiles().size()
+                            )
+                    );
+
+                    startButton.setDisable(false);
+                }
+            }
+
             checkForInterruptedTransfer();
 
             Duration elapsed = Duration.between(
@@ -1103,7 +1132,9 @@ public class MainController {
                     configuration.skipPreviouslySent()
             );
 
-            appendLog("Previous transfer loaded. Scan the source to resume.");
+            appendLog("Previous transfer loaded.");
+
+            scanSource();
 
         } catch (Exception exception) {
 
