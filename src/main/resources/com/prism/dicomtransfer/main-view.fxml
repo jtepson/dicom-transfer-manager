@@ -127,26 +127,43 @@
                              GridPane.columnIndex="3"/>
 
                     <Label text="storescu"
-                           GridPane.rowIndex="2"
-                           GridPane.columnIndex="0"/>
+                            GridPane.rowIndex="2"
+                            GridPane.columnIndex="0"/>
 
                     <TextField fx:id="storescuPathField"
-                               promptText="Path to storescu.bat or storescu executable"
-                               GridPane.rowIndex="2"
-                               GridPane.columnIndex="1"
-                               GridPane.columnSpan="2"/>
+                            promptText="Path to storescu.bat or storescu executable"
+                            GridPane.rowIndex="2"
+                            GridPane.columnIndex="1"
+                            GridPane.columnSpan="2"/>
 
                     <Button text="Browse"
                             onAction="#browseStorescu"
                             maxWidth="Infinity"
                             GridPane.rowIndex="2"
                             GridPane.columnIndex="3"/>
+
+                    <Label text="echoscu"
+                            GridPane.rowIndex="3"
+                            GridPane.columnIndex="0"/>
+
+                    <TextField fx:id="echoscuPathField"
+                            promptText="Path to DCMTK echoscu.exe"
+                            GridPane.rowIndex="3"
+                            GridPane.columnIndex="1"
+                            GridPane.columnSpan="2"/>
+
+                    <Button text="Browse"
+                            onAction="#browseEchoscu"
+                            maxWidth="Infinity"
+                            GridPane.rowIndex="3"
+                            GridPane.columnIndex="3"/>
                 </GridPane>
 
                 <Button fx:id="testConnectionButton"
                         text="Test Connection"
                         onAction="#testConnection"
-                        styleClass="secondary-button"/>
+                        styleClass="secondary-button"
+                        GridPane.rowIndex="4"/>
             </VBox>
 
             <VBox spacing="12" styleClass="card">

@@ -2,6 +2,9 @@ package com.prism.dicomtransfer.ui;
 
 import com.prism.dicomtransfer.model.ScanResult;
 import com.prism.dicomtransfer.service.DirectoryScannerService;
+import com.prism.dicomtransfer.model.ConnectionTestResult;
+import com.prism.dicomtransfer.model.TransferConfiguration;
+import com.prism.dicomtransfer.service.ConnectionTestService;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -47,6 +50,11 @@ public class MainController {
     private Task<ScanResult> activeScanTask;
     private ScanResult latestScanResult;
     private Instant scanStartedAt;
+
+    private final ConnectionTestService connectionTestService =
+        new ConnectionTestService();
+
+    private Task<ConnectionTestResult> activeConnectionTask;
 
     @FXML
     private TextField sourceDirectoryField;
@@ -112,6 +120,9 @@ public class MainController {
     private Button testConnectionButton;
 
     @FXML
+    private TextField echoscuPathField;
+
+    @FXML
     private void initialize() {
         portSpinner.setValueFactory(
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(
@@ -141,6 +152,14 @@ public class MainController {
         callingAeField.setText("BMSCACHE");
         calledAeField.setText("BMS_CACHE");
         hostField.setText("172.31.36.63");
+
+        storescuPathField.setText(
+                "C:\\Users\\Tyler\\Documents\\dcmtk-3.6.9-win64-dynamic\\bin\\storescu.exe"
+        );
+
+        echoscuPathField.setText(
+                "C:\\Users\\Tyler\\Documents\\dcmtk-3.6.9-win64-dynamic\\bin\\echoscu.exe"
+        );
 
         transferProgressBar.setProgress(0);
         transferStatusLabel.setText("Ready");
@@ -400,114 +419,117 @@ public class MainController {
 
     @FXML
     private void testConnection() {
-        if (!validateDestinationSettings()) {
+        if (activeConnectionTask != null && activeConnectionTask.isRunning()) {
             return;
         }
 
-        Path storescuPath = Path.of(
-                storescuPathField.getText().trim()
+        String echoscuValue = echoscuPathField.getText().trim();
+        String callingAe = callingAeField.getText().trim();
+        String calledAe = calledAeField.getText().trim();
+        String host = hostField.getText().trim();
+
+        if (echoscuValue.isBlank()) {
+            showWarning("Select DCMTK echoscu.exe.");
+            return;
+        }
+
+        Path echoscuPath;
+
+        try {
+            echoscuPath = Path.of(echoscuValue)
+                    .toAbsolutePath()
+                    .normalize();
+        } catch (RuntimeException exception) {
+            showWarning("The echoscu path is invalid.");
+            return;
+        }
+
+        if (!Files.isRegularFile(echoscuPath)) {
+            showWarning("The selected echoscu.exe does not exist.");
+            return;
+        }
+
+        if (callingAe.isBlank() || calledAe.isBlank() || host.isBlank()) {
+            showWarning("Enter the calling AE, called AE, and destination host.");
+            return;
+        }
+
+        Path sourcePath = pathOrCurrentDirectory(sourceDirectoryField.getText());
+        Path workPath = pathOrCurrentDirectory(workDirectoryField.getText());
+        Path storescuPath = pathOrCurrentDirectory(storescuPathField.getText());
+
+        TransferConfiguration configuration = new TransferConfiguration(
+                sourcePath,
+                workPath,
+                storescuPath,
+                echoscuPath,
+                callingAe,
+                calledAe,
+                host,
+                portSpinner.getValue(),
+                workerSpinner.getValue(),
+                batchSizeSpinner.getValue(),
+                skipPreviouslySentCheckBox.isSelected()
         );
 
-        if (!Files.isRegularFile(storescuPath)) {
-            showWarning("The selected storescu file does not exist.");
-            return;
-        }
+        activeConnectionTask = connectionTestService.createTestTask(
+                configuration,
+                this::appendLog
+        );
 
-        Path echoscuPath = findEchoscuBeside(storescuPath);
+        activeConnectionTask.setOnRunning(event -> {
+            testConnectionButton.setDisable(true);
+            transferStatusLabel.setText("Connecting");
+            appendLog("Starting DICOM C-ECHO...");
+        });
 
-        if (echoscuPath == null) {
-            showWarning(
-                    "Could not find echoscu beside storescu.\n\n"
-                            + "Expected echoscu.bat, echoscu.exe, or echoscu "
-                            + "in:\n"
-                            + storescuPath.getParent()
-            );
-            return;
-        }
+        activeConnectionTask.setOnSucceeded(event -> {
+            ConnectionTestResult result = activeConnectionTask.getValue();
 
-        testConnectionButton.setDisable(true);
-        transferStatusLabel.setText("Connecting");
-        appendLog("Testing DICOM connection...");
-
-        Task<ConnectionTestResult> connectionTask = new Task<>() {
-
-            @Override
-            protected ConnectionTestResult call() throws Exception {
-                List<String> command = buildEchoCommand(echoscuPath);
-
-                ProcessBuilder processBuilder = new ProcessBuilder(command);
-                processBuilder.redirectErrorStream(true);
-
-                Process process = processBuilder.start();
-                activeProcess.set(process);
-
-                List<String> outputLines = new ArrayList<>();
-
-                try (BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(
-                                process.getInputStream(),
-                                StandardCharsets.UTF_8
-                        )
-                )) {
-                    String line;
-
-                    while ((line = reader.readLine()) != null) {
-                        outputLines.add(line);
-                    }
-                }
-
-                int exitCode = process.waitFor();
-
-                return new ConnectionTestResult(
-                        exitCode,
-                        outputLines
-                );
-            }
-        };
-
-        connectionTask.setOnSucceeded(event -> {
-            activeProcess.set(null);
             testConnectionButton.setDisable(false);
 
-            ConnectionTestResult result = connectionTask.getValue();
-
-            result.outputLines().forEach(this::appendLog);
-
-            if (result.exitCode() == 0) {
+            if (result.successful()) {
                 transferStatusLabel.setText("Connected");
-                appendLog("C-ECHO succeeded.");
+
+                appendLog(
+                        String.format(
+                                Locale.US,
+                                "C-ECHO succeeded in %.2f seconds.",
+                                result.elapsedMilliseconds() / 1000.0
+                        )
+                );
             } else {
                 transferStatusLabel.setText("Connection Failed");
+
                 appendLog(
                         "C-ECHO failed with exit code "
                                 + result.exitCode()
                                 + "."
                 );
             }
+
+            activeConnectionTask = null;
         });
 
-        connectionTask.setOnFailed(event -> {
-            activeProcess.set(null);
+        activeConnectionTask.setOnFailed(event -> {
+            Throwable exception = activeConnectionTask.getException();
+
             testConnectionButton.setDisable(false);
             transferStatusLabel.setText("Connection Failed");
 
-            Throwable exception = connectionTask.getException();
-
             appendLog(
-                    "Connection test failed: "
-                            + (
-                            exception == null
-                                    ? "Unknown error"
-                                    : exception.getMessage()
-                    )
+                    "C-ECHO failed: "
+                            + getExceptionMessage(exception)
             );
 
             showError("Connection test failed.", exception);
+
+            activeConnectionTask = null;
         });
 
         Thread thread = new Thread(
-                connectionTask,
-                "dicom-echo-test"
+                activeConnectionTask,
+                "dicom-connection-test"
         );
 
         thread.setDaemon(true);
@@ -560,6 +582,39 @@ public class MainController {
         transferStatusLabel.setText("Stopped");
 
         appendLog("Stop requested.");
+    }
+
+    @FXML
+    private void browseEchoscu() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Select DCMTK echoscu.exe");
+
+        chooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter(
+                        "DCMTK echoscu",
+                        "echoscu.exe"
+                )
+        );
+
+        String currentValue = echoscuPathField.getText();
+
+        if (currentValue != null && !currentValue.isBlank()) {
+            File currentFile = new File(currentValue);
+            File parent = currentFile.getParentFile();
+
+            if (parent != null && parent.isDirectory()) {
+                chooser.setInitialDirectory(parent);
+            }
+        }
+
+        File selected = chooser.showOpenDialog(
+                echoscuPathField.getScene().getWindow()
+        );
+
+        if (selected != null) {
+            echoscuPathField.setText(selected.getAbsolutePath());
+            appendLog("echoscu selected: " + selected.getAbsolutePath());
+        }
     }
 
     private List<String> buildEchoCommand(Path echoscuPath) {
@@ -836,9 +891,25 @@ public class MainController {
         );
     }
 
-    private record ConnectionTestResult(
-            int exitCode,
-            List<String> outputLines
-    ) {
+    private Path pathOrCurrentDirectory(String value) {
+        if (value == null || value.isBlank()) {
+            return Path.of(".").toAbsolutePath().normalize();
+        }
+
+        return Path.of(value).toAbsolutePath().normalize();
+    }
+
+    private String getExceptionMessage(Throwable exception) {
+        if (exception == null) {
+            return "Unknown error";
+        }
+
+        String message = exception.getMessage();
+
+        if (message == null || message.isBlank()) {
+            return exception.getClass().getSimpleName();
+        }
+
+        return message;
     }
 }
