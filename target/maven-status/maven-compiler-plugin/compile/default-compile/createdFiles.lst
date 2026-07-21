@@ -4,6 +4,7 @@ com\prism\dicomtransfer\model\TransferResult.class
 com\prism\dicomtransfer\model\TransferProgress.class
 com\prism\dicomtransfer\service\TransferEngineService$1.class
 com\prism\dicomtransfer\DicomTransferApplication.class
+com\prism\dicomtransfer\service\BatchBuilder.class
 com\prism\dicomtransfer\service\DirectoryScannerService$1.class
 com\prism\dicomtransfer\model\ScanResult.class
 com\prism\dicomtransfer\model\TransferConfiguration.class
