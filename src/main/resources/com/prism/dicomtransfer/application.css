@@ -1,0 +1,139 @@
+.root {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+}
+
+.app-scroll-pane {
+    -fx-background: #10151c;
+    -fx-background-color: #10151c;
+    -fx-border-color: transparent;
+}
+
+.app-scroll-pane > .viewport {
+    -fx-background-color: #10151c;
+}
+
+.app-root {
+    -fx-background-color: #10151c;
+}
+
+.label {
+    -fx-text-fill: #dce5ef;
+}
+
+.application-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #f4f7fb;
+}
+
+.application-subtitle,
+.muted-label {
+    -fx-text-fill: #8794a3;
+}
+
+.card {
+    -fx-background-color: #18212b;
+    -fx-background-radius: 8px;
+    -fx-border-color: #293644;
+    -fx-border-radius: 8px;
+    -fx-padding: 18px;
+}
+
+.section-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #f4f7fb;
+}
+
+.field-caption,
+.metric-caption {
+    -fx-text-fill: #8996a5;
+}
+
+.metric-value {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #f4f7fb;
+}
+
+.status-label {
+    -fx-text-fill: #61d683;
+    -fx-font-weight: bold;
+}
+
+.text-field,
+.spinner,
+.text-area {
+    -fx-background-color: #111820;
+    -fx-text-fill: #e6edf5;
+    -fx-prompt-text-fill: #667382;
+    -fx-border-color: #334150;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.spinner .text-field {
+    -fx-border-color: transparent;
+}
+
+.text-area .content {
+    -fx-background-color: #111820;
+}
+
+.log-area {
+    -fx-font-family: "Consolas";
+    -fx-font-size: 12px;
+}
+
+.button {
+    -fx-cursor: hand;
+    -fx-background-radius: 5px;
+    -fx-padding: 8px 15px;
+    -fx-font-weight: bold;
+}
+
+.primary-button {
+    -fx-background-color: #2d7ff9;
+    -fx-text-fill: white;
+}
+
+.primary-button:hover {
+    -fx-background-color: #458efa;
+}
+
+.secondary-button {
+    -fx-background-color: #263341;
+    -fx-text-fill: #dce5ef;
+    -fx-border-color: #405064;
+    -fx-border-radius: 5px;
+}
+
+.secondary-button:hover {
+    -fx-background-color: #314151;
+}
+
+.danger-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #ff8278;
+    -fx-border-color: #9b413c;
+    -fx-border-radius: 5px;
+}
+
+.progress-bar {
+    -fx-pref-height: 9px;
+}
+
+.progress-bar > .track {
+    -fx-background-color: #27323d;
+    -fx-background-radius: 8px;
+}
+
+.progress-bar > .bar {
+    -fx-background-color: #2d7ff9;
+    -fx-background-radius: 8px;
+}
+
+.check-box {
+    -fx-text-fill: #dce5ef;
+}

@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.prism.dicomtransfer.MainController"
+            fitToWidth="true"
+            hbarPolicy="NEVER"
+            styleClass="app-scroll-pane">
+
+    <content>
+        <VBox spacing="16" styleClass="app-root">
+            <padding>
+                <Insets top="24" right="28" bottom="28" left="28"/>
+            </padding>
+
+            <VBox spacing="3">
+                <Label text="DICOM Transfer Manager"
+                       styleClass="application-title"/>
+
+                <Label text="Send DICOM files in resumable parallel batches."
+                       styleClass="application-subtitle"/>
+            </VBox>
+
+            <VBox spacing="12" styleClass="card">
+                <Label text="Source" styleClass="section-title"/>
+
+                <GridPane hgap="10" vgap="10">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="145"
+                                           prefWidth="145"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                        <ColumnConstraints minWidth="92"
+                                           prefWidth="92"/>
+                    </columnConstraints>
+
+                    <Label text="DICOM directory"
+                           GridPane.rowIndex="0"
+                           GridPane.columnIndex="0"/>
+
+                    <TextField fx:id="sourceDirectoryField"
+                               promptText="Select the directory containing DICOM files"
+                               GridPane.rowIndex="0"
+                               GridPane.columnIndex="1"/>
+
+                    <Button text="Browse"
+                            onAction="#browseSourceDirectory"
+                            maxWidth="Infinity"
+                            GridPane.rowIndex="0"
+                            GridPane.columnIndex="2"/>
+
+                    <Label text="Working directory"
+                           GridPane.rowIndex="1"
+                           GridPane.columnIndex="0"/>
+
+                    <TextField fx:id="workDirectoryField"
+                               promptText="Stores transfer state, logs, and sent-file history"
+                               GridPane.rowIndex="1"
+                               GridPane.columnIndex="1"/>
+
+                    <Button text="Browse"
+                            onAction="#browseWorkDirectory"
+                            maxWidth="Infinity"
+                            GridPane.rowIndex="1"
+                            GridPane.columnIndex="2"/>
+                </GridPane>
+
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <Button text="Scan Source"
+                            onAction="#scanSource"
+                            styleClass="secondary-button"/>
+
+                    <Label fx:id="scanStatusLabel"
+                           text="No directory scanned."
+                           styleClass="muted-label"/>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="12" styleClass="card">
+                <Label text="Destination" styleClass="section-title"/>
+
+                <GridPane hgap="10" vgap="10">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="145"
+                                           prefWidth="145"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                        <ColumnConstraints minWidth="105"
+                                           prefWidth="105"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+
+                    <Label text="Calling AE"
+                           GridPane.rowIndex="0"
+                           GridPane.columnIndex="0"/>
+
+                    <TextField fx:id="callingAeField"
+                               GridPane.rowIndex="0"
+                               GridPane.columnIndex="1"/>
+
+                    <Label text="Called AE"
+                           GridPane.rowIndex="0"
+                           GridPane.columnIndex="2"/>
+
+                    <TextField fx:id="calledAeField"
+                               GridPane.rowIndex="0"
+                               GridPane.columnIndex="3"/>
+
+                    <Label text="Host"
+                           GridPane.rowIndex="1"
+                           GridPane.columnIndex="0"/>
+
+                    <TextField fx:id="hostField"
+                               GridPane.rowIndex="1"
+                               GridPane.columnIndex="1"/>
+
+                    <Label text="Port"
+                           GridPane.rowIndex="1"
+                           GridPane.columnIndex="2"/>
+
+                    <Spinner fx:id="portSpinner"
+                             editable="true"
+                             maxWidth="Infinity"
+                             GridPane.rowIndex="1"
+                             GridPane.columnIndex="3"/>
+
+                    <Label text="storescu"
+                           GridPane.rowIndex="2"
+                           GridPane.columnIndex="0"/>
+
+                    <TextField fx:id="storescuPathField"
+                               promptText="Path to storescu.bat or storescu executable"
+                               GridPane.rowIndex="2"
+                               GridPane.columnIndex="1"
+                               GridPane.columnSpan="2"/>
+
+                    <Button text="Browse"
+                            onAction="#browseStorescu"
+                            maxWidth="Infinity"
+                            GridPane.rowIndex="2"
+                            GridPane.columnIndex="3"/>
+                </GridPane>
+
+                <Button text="Test Connection"
+                        onAction="#testConnection"
+                        styleClass="secondary-button"/>
+            </VBox>
+
+            <VBox spacing="12" styleClass="card">
+                <Label text="Transfer Settings" styleClass="section-title"/>
+
+                <HBox spacing="20" alignment="CENTER_LEFT">
+                    <VBox spacing="5">
+                        <Label text="Parallel workers"
+                               styleClass="field-caption"/>
+                        <Spinner fx:id="workerSpinner"
+                                 editable="true"
+                                 prefWidth="140"/>
+                    </VBox>
+
+                    <VBox spacing="5">
+                        <Label text="Files per batch"
+                               styleClass="field-caption"/>
+                        <Spinner fx:id="batchSizeSpinner"
+                                 editable="true"
+                                 prefWidth="140"/>
+                    </VBox>
+
+                    <CheckBox fx:id="skipPreviouslySentCheckBox"
+                              text="Skip previously sent files"
+                              selected="true"/>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="12" styleClass="card">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="Progress" styleClass="section-title"/>
+
+                    <Region HBox.hgrow="ALWAYS"/>
+
+                    <Label fx:id="transferStatusLabel"
+                           text="Ready"
+                           styleClass="status-label"/>
+                </HBox>
+
+                <ProgressBar fx:id="transferProgressBar"
+                             progress="0"
+                             maxWidth="Infinity"/>
+
+                <HBox spacing="35">
+                    <VBox spacing="3">
+                        <Label text="Files" styleClass="metric-caption"/>
+                        <Label fx:id="filesProgressLabel"
+                               text="0 / 0"
+                               styleClass="metric-value"/>
+                    </VBox>
+
+                    <VBox spacing="3">
+                        <Label text="Rate" styleClass="metric-caption"/>
+                        <Label fx:id="rateLabel"
+                               text="0.00 files/sec"
+                               styleClass="metric-value"/>
+                    </VBox>
+
+                    <VBox spacing="3">
+                        <Label text="Elapsed" styleClass="metric-caption"/>
+                        <Label fx:id="elapsedLabel"
+                               text="00:00:00"
+                               styleClass="metric-value"/>
+                    </VBox>
+                </HBox>
+
+                <TextArea fx:id="logTextArea"
+                          editable="false"
+                          wrapText="false"
+                          prefRowCount="8"
+                          styleClass="log-area"/>
+
+                <HBox spacing="10">
+                    <Button fx:id="startButton"
+                            text="Start Transfer"
+                            onAction="#startTransfer"
+                            styleClass="primary-button"/>
+
+                    <Button fx:id="stopButton"
+                            text="Stop Safely"
+                            onAction="#stopTransfer"
+                            styleClass="danger-button"/>
+                </HBox>
+            </VBox>
+        </VBox>
+    </content>
+</ScrollPane>
