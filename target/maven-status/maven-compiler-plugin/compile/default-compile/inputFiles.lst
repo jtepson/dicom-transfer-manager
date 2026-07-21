@@ -9,4 +9,5 @@ C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\service\Conn
 C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\service\DirectoryScannerService.java
 C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\service\TransferEngineService.java
 C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\service\TransferListener.java
+C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\service\TransferStateService.java
 C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\ui\MainController.java
