@@ -9,11 +9,14 @@ import com.prism.dicomtransfer.model.TransferProgress;
 import com.prism.dicomtransfer.model.TransferResult;
 import com.prism.dicomtransfer.service.TransferEngineService;
 import com.prism.dicomtransfer.service.TransferListener;
+import com.prism.dicomtransfer.model.TransferState;
+import com.prism.dicomtransfer.service.TransferStateService;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -64,6 +67,9 @@ public class MainController {
             new TransferEngineService();
 
     private Task<TransferResult> activeTransferTask;
+
+    private final TransferStateService transferStateService =
+            new TransferStateService();
 
     @FXML
     private TextField sourceDirectoryField;
@@ -305,6 +311,8 @@ public class MainController {
             scanStatusLabel.textProperty().unbind();
 
             latestScanResult = activeScanTask.getValue();
+
+            checkForInterruptedTransfer();
 
             Duration elapsed = Duration.between(
                     scanStartedAt,
@@ -999,6 +1007,64 @@ public class MainController {
 
         if (current.isDirectory()) {
             chooser.setInitialDirectory(current);
+        }
+    }
+
+    private void checkForInterruptedTransfer() {
+        try {
+
+            Path workingDirectory =
+                    pathOrCurrentDirectory(workDirectoryField.getText());
+
+            var stateOptional =
+                    transferStateService.load(workingDirectory);
+
+            if (stateOptional.isEmpty()) {
+                return;
+            }
+
+            TransferState state = stateOptional.get();
+
+            if (!state.isInterrupted()
+                    && state.status() != TransferState.Status.STOPPED) {
+                return;
+            }
+
+            Alert alert = new Alert(
+                    Alert.AlertType.CONFIRMATION
+            );
+
+            alert.setTitle("Resume Transfer");
+
+            alert.setHeaderText("Interrupted transfer detected");
+
+            alert.setContentText(
+                    String.format(
+                            """
+                            %d of %d files were completed.
+
+                            Would you like to resume this transfer?
+                            """,
+                            state.successfulFiles(),
+                            state.totalFiles()
+                    )
+            );
+
+            if (alert.showAndWait().orElse(ButtonType.CANCEL)
+                    != ButtonType.OK) {
+
+                transferStateService.delete(workingDirectory);
+                return;
+            }
+
+            appendLog("Resuming previous transfer...");
+
+        } catch (Exception exception) {
+
+            appendLog(
+                    "Unable to load previous transfer state: "
+                            + exception.getMessage()
+            );
         }
     }
 
