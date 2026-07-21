@@ -627,28 +627,65 @@ public class MainController {
         });
 
         activeTransferTask.setOnSucceeded(event -> {
-
             TransferResult result = activeTransferTask.getValue();
 
-            transferStatusLabel.setText(
-                    result.successful()
-                            ? "Completed"
-                            : "Completed with Errors"
-            );
+            if (result.stopped()) {
+                transferStatusLabel.setText("Stopped");
 
-            appendLog(
-                    String.format(
-                            Locale.US,
-                            "Transfer finished: %,d successful, %,d failed.",
-                            result.successfulFiles(),
-                            result.failedFiles()
-                    )
-            );
+                appendLog(
+                        String.format(
+                                Locale.US,
+                                "Transfer stopped safely: %,d files recorded as sent, %,d failed.",
+                                result.successfulFiles(),
+                                result.failedFiles()
+                        )
+                );
+            } else if (result.successful()) {
+                transferStatusLabel.setText("Completed");
+                transferProgressBar.setProgress(1.0);
+
+                appendLog(
+                        String.format(
+                                Locale.US,
+                                "Transfer completed successfully: %,d files sent in %s.",
+                                result.successfulFiles(),
+                                formatDuration(result.elapsed())
+                        )
+                );
+            } else {
+                transferStatusLabel.setText("Completed with Errors");
+
+                appendLog(
+                        String.format(
+                                Locale.US,
+                                "Transfer completed with errors: %,d successful, %,d failed.",
+                                result.successfulFiles(),
+                                result.failedFiles()
+                        )
+                );
+
+                if (!result.failedFilePaths().isEmpty()) {
+                    appendLog(
+                            "Failed files remain available for retry after rescanning."
+                    );
+                }
+            }
 
             startButton.setDisable(false);
             stopButton.setDisable(true);
-
             disableConfiguration(false);
+
+            /*
+            * The previous scan is now stale because sent_files.txt changed.
+            * Require a fresh scan before another transfer.
+            */
+            latestScanResult = null;
+            startButton.setDisable(true);
+            scanStatusLabel.setText("Rescan required");
+
+            appendLog(
+                    "Rescan the source directory to refresh the remaining file list."
+            );
 
             activeTransferTask = null;
         });
