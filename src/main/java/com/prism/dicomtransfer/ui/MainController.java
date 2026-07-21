@@ -547,35 +547,143 @@ public class MainController {
 
     @FXML
     private void startTransfer() {
+        if (activeTransferTask != null && activeTransferTask.isRunning()) {
+            return;
+        }
+
         if (!validateTransferSettings()) {
             return;
         }
 
-        if (latestScanResult == null) {
-            showWarning("Scan the source directory first.");
-            return;
-        }
-
-        if (latestScanResult.remainingFileCount() == 0) {
-            showWarning("No files remain to send.");
-            return;
-        }
-
-        appendLog(
-                "Transfer engine is the next implementation step."
+        TransferConfiguration configuration = new TransferConfiguration(
+                pathOrCurrentDirectory(sourceDirectoryField.getText()),
+                validateOrCreateWorkingDirectory(),
+                pathOrCurrentDirectory(storescuPathField.getText()),
+                pathOrCurrentDirectory(echoscuPathField.getText()),
+                callingAeField.getText().trim(),
+                calledAeField.getText().trim(),
+                hostField.getText().trim(),
+                portSpinner.getValue(),
+                workerSpinner.getValue(),
+                batchSizeSpinner.getValue(),
+                skipPreviouslySentCheckBox.isSelected()
         );
 
-        appendLog(
-                String.format(
-                        Locale.US,
-                        "Prepared %,d files using %d workers and %d files per batch.",
-                        latestScanResult.remainingFileCount(),
-                        workerSpinner.getValue(),
-                        batchSizeSpinner.getValue()
-                )
+        TransferListener listener = new TransferListener() {
+
+            @Override
+            public void onProgress(TransferProgress progress) {
+                Platform.runLater(() -> {
+
+                    transferProgressBar.setProgress(
+                            progress.progressFraction()
+                    );
+
+                    filesProgressLabel.setText(
+                            String.format(
+                                    Locale.US,
+                                    "%,d / %,d",
+                                    progress.processedFiles(),
+                                    progress.totalFiles()
+                            )
+                    );
+
+                    rateLabel.setText(
+                            String.format(
+                                    Locale.US,
+                                    "%.2f files/sec",
+                                    progress.filesPerSecond()
+                            )
+                    );
+
+                    elapsedLabel.setText(
+                            formatDuration(progress.elapsed())
+                    );
+                });
+            }
+
+            @Override
+            public void onLog(String message) {
+                appendLog(message);
+            }
+        };
+
+        activeTransferTask = transferEngineService.createTransferTask(
+                configuration,
+                latestScanResult.remainingFiles(),
+                listener
         );
 
-        transferStatusLabel.setText("Prepared");
+        activeTransferTask.setOnRunning(event -> {
+
+            transferStatusLabel.setText("Transferring");
+
+            startButton.setDisable(true);
+            stopButton.setDisable(false);
+
+            disableConfiguration(true);
+
+            appendLog("Transfer started.");
+        });
+
+        activeTransferTask.setOnSucceeded(event -> {
+
+            TransferResult result = activeTransferTask.getValue();
+
+            transferStatusLabel.setText(
+                    result.successful()
+                            ? "Completed"
+                            : "Completed with Errors"
+            );
+
+            appendLog(
+                    String.format(
+                            Locale.US,
+                            "Transfer finished: %,d successful, %,d failed.",
+                            result.successfulFiles(),
+                            result.failedFiles()
+                    )
+            );
+
+            startButton.setDisable(false);
+            stopButton.setDisable(true);
+
+            disableConfiguration(false);
+
+            activeTransferTask = null;
+        });
+
+        activeTransferTask.setOnFailed(event -> {
+
+            Throwable exception = activeTransferTask.getException();
+
+            transferStatusLabel.setText("Failed");
+
+            appendLog(
+                    "Transfer failed: "
+                            + getExceptionMessage(exception)
+            );
+
+            showError(
+                    "Transfer failed.",
+                    exception
+            );
+
+            startButton.setDisable(false);
+            stopButton.setDisable(true);
+
+            disableConfiguration(false);
+
+            activeTransferTask = null;
+        });
+
+        Thread thread = new Thread(
+                activeTransferTask,
+                "dicom-transfer"
+        );
+
+        thread.setDaemon(true);
+        thread.start();
     }
 
     @FXML
