@@ -1,8 +1,8 @@
 com\prism\dicomtransfer\service\DirectoryScannerService.class
-com\prism\dicomtransfer\MainController.class
-com\prism\dicomtransfer\MainController$1.class
+com\prism\dicomtransfer\ui\MainController$ConnectionTestResult.class
 com\prism\dicomtransfer\service\DirectoryScannerService$1$1.class
+com\prism\dicomtransfer\ui\MainController.class
 com\prism\dicomtransfer\DicomTransferApplication.class
-com\prism\dicomtransfer\MainController$ConnectionTestResult.class
 com\prism\dicomtransfer\service\DirectoryScannerService$1.class
+com\prism\dicomtransfer\ui\MainController$1.class
 com\prism\dicomtransfer\model\ScanResult.class

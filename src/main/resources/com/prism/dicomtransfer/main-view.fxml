@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 
 <ScrollPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.prism.dicomtransfer.MainController"
+            fx:controller="com.prism.dicomtransfer.ui.MainController"
             fitToWidth="true"
             hbarPolicy="NEVER"
             styleClass="app-scroll-pane">

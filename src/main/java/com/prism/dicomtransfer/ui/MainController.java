@@ -1,4 +1,4 @@
-package com.prism.dicomtransfer;
+package com.prism.dicomtransfer.ui;
 
 import com.prism.dicomtransfer.model.ScanResult;
 import com.prism.dicomtransfer.service.DirectoryScannerService;
