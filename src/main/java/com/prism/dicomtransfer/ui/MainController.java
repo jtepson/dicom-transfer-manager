@@ -1057,7 +1057,53 @@ public class MainController {
                 return;
             }
 
-            appendLog("Resuming previous transfer...");
+            TransferConfiguration configuration = state.configuration();
+
+            sourceDirectoryField.setText(
+                    configuration.sourceDirectory().toString()
+            );
+
+            workDirectoryField.setText(
+                    configuration.workingDirectory().toString()
+            );
+
+            storescuPathField.setText(
+                    configuration.storescuPath().toString()
+            );
+
+            echoscuPathField.setText(
+                    configuration.echoscuPath().toString()
+            );
+
+            callingAeField.setText(
+                    configuration.callingAeTitle()
+            );
+
+            calledAeField.setText(
+                    configuration.calledAeTitle()
+            );
+
+            hostField.setText(
+                    configuration.destinationHost()
+            );
+
+            portSpinner.getValueFactory().setValue(
+                    configuration.destinationPort()
+            );
+
+            workerSpinner.getValueFactory().setValue(
+                    configuration.parallelWorkers()
+            );
+
+            batchSizeSpinner.getValueFactory().setValue(
+                    configuration.filesPerBatch()
+            );
+
+            skipPreviouslySentCheckBox.setSelected(
+                    configuration.skipPreviouslySent()
+            );
+
+            appendLog("Previous transfer loaded. Scan the source to resume.");
 
         } catch (Exception exception) {
 
