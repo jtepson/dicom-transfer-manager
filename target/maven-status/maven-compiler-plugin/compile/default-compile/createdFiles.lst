@@ -1,5 +1,6 @@
 com\prism\dicomtransfer\service\DirectoryScannerService.class
 com\prism\dicomtransfer\model\ConnectionTestResult.class
+com\prism\dicomtransfer\model\TransferState.class
 com\prism\dicomtransfer\model\TransferResult.class
 com\prism\dicomtransfer\model\TransferProgress.class
 com\prism\dicomtransfer\service\TransferEngineService$1.class
@@ -14,4 +15,5 @@ com\prism\dicomtransfer\service\DirectoryScannerService$1$1.class
 com\prism\dicomtransfer\service\TransferEngineService.class
 com\prism\dicomtransfer\ui\MainController.class
 com\prism\dicomtransfer\service\TransferListener.class
+com\prism\dicomtransfer\model\TransferState$Status.class
 com\prism\dicomtransfer\service\TransferEngineService$BatchExecutionResult.class

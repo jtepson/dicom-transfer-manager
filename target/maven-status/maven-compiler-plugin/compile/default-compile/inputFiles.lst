@@ -4,6 +4,7 @@ C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\model\ScanRe
 C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\model\TransferConfiguration.java
 C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\model\TransferProgress.java
 C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\model\TransferResult.java
+C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\model\TransferState.java
 C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\service\ConnectionTestService.java
 C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\service\DirectoryScannerService.java
 C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\service\TransferEngineService.java
