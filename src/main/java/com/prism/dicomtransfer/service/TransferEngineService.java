@@ -3,6 +3,7 @@ package com.prism.dicomtransfer.service;
 import com.prism.dicomtransfer.model.TransferConfiguration;
 import com.prism.dicomtransfer.model.TransferProgress;
 import com.prism.dicomtransfer.model.TransferResult;
+import com.prism.dicomtransfer.model.TransferState;
 import javafx.concurrent.Task;
 
 import java.io.BufferedReader;
@@ -43,6 +44,9 @@ public class TransferEngineService {
     private final Set<Process> activeProcesses =
             ConcurrentHashMap.newKeySet();
 
+    private final TransferStateService transferStateService =
+            new TransferStateService();
+
     private volatile boolean stopRequested;
 
     public Task<TransferResult> createTransferTask(
@@ -58,6 +62,16 @@ public class TransferEngineService {
                 activeProcesses.clear();
 
                 Instant startedAt = Instant.now();
+
+                saveTransferState(
+                        configuration,
+                        files.size(),
+                        0,
+                        0,
+                        TransferState.Status.RUNNING,
+                        startedAt,
+                        listener
+                );
 
                 List<List<Path>> batches = createSafeBatches(
                         configuration,
@@ -203,6 +217,28 @@ public class TransferEngineService {
                         )
                 );
 
+                boolean stopped = stopRequested || isCancelled();
+
+                TransferState.Status finalStatus;
+
+                if (stopped) {
+                    finalStatus = TransferState.Status.STOPPED;
+                } else if (failedFileCount.get() > 0) {
+                    finalStatus = TransferState.Status.COMPLETED_WITH_ERRORS;
+                } else {
+                    finalStatus = TransferState.Status.COMPLETED;
+                }
+
+                saveTransferState(
+                        configuration,
+                        files.size(),
+                        successfulFileCount.get(),
+                        failedFileCount.get(),
+                        finalStatus,
+                        startedAt,
+                        listener
+                );
+
                 return new TransferResult(
                         files.size(),
                         successfulFileCount.get(),
@@ -210,7 +246,7 @@ public class TransferEngineService {
                         successfulBatchCount.get(),
                         failedBatchCount.get(),
                         elapsed,
-                        stopRequested || isCancelled(),
+                        stopped,
                         List.copyOf(failedFiles)
                 );
             }
@@ -637,6 +673,35 @@ public class TransferEngineService {
                 .normalize()
                 .toString()
                 .replace('\\', '/');
+    }
+
+    private void saveTransferState(
+            TransferConfiguration configuration,
+            long totalFiles,
+            long successfulFiles,
+            long failedFiles,
+            TransferState.Status status,
+            Instant startedAt,
+            TransferListener listener
+    ) {
+        TransferState state = new TransferState(
+                configuration,
+                totalFiles,
+                successfulFiles,
+                failedFiles,
+                status,
+                startedAt,
+                Instant.now()
+        );
+
+        try {
+            transferStateService.save(state);
+        } catch (IOException exception) {
+            listener.onLog(
+                    "Could not save transfer state: "
+                            + exception.getMessage()
+            );
+        }
     }
 
     private String rootMessage(Throwable exception) {
