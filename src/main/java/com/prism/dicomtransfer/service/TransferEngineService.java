@@ -470,6 +470,9 @@ public class TransferEngineService {
         command.add("-aec");
         command.add(configuration.calledAeTitle());
 
+        //this allows us to send jpeg lossless without converting via dcmtk
+        command.add("-xs");
+
         command.add("-to");
         command.add("10");
 
