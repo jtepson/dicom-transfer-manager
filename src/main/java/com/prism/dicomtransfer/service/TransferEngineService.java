@@ -47,13 +47,6 @@ public class TransferEngineService {
     
     private volatile boolean stopRequested;
 
-    private volatile TransferConfiguration activeConfiguration;
-    private volatile Instant activeStartedAt;
-    private final AtomicLong activeSuccessfulFileCount = new AtomicLong();
-    private final AtomicLong activeFailedFileCount = new AtomicLong();
-    private volatile long activeTotalFiles;
-    private volatile TransferListener activeListener;
-
     public Task<TransferResult> createTransferTask(
             TransferConfiguration configuration,
             List<Path> files,
