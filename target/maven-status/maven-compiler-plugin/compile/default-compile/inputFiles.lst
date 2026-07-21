@@ -1,4 +1,6 @@
 C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\DicomTransferApplication.java
+C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\model\ConnectionTestResult.java
 C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\model\ScanResult.java
+C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\model\TransferConfiguration.java
 C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\service\DirectoryScannerService.java
 C:\Dev\dicom-transfer-manager\src\main\java\com\prism\dicomtransfer\ui\MainController.java
