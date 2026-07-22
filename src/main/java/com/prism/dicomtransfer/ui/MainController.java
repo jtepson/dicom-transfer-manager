@@ -71,6 +71,8 @@ public class MainController {
     private final TransferStateService transferStateService =
             new TransferStateService();
 
+    private boolean autoResumeTransfer;
+
     @FXML
     private TextField sourceDirectoryField;
 
@@ -186,6 +188,10 @@ public class MainController {
         startButton.setDisable(true);
 
         appendLog("Application started.");
+
+        if (!workDirectoryField.getText().isBlank()) {
+            checkForInterruptedTransfer();
+        }
     }
 
     @FXML
@@ -224,6 +230,8 @@ public class MainController {
 
         if (selected != null) {
             workDirectoryField.setText(selected.getAbsolutePath());
+
+            checkForInterruptedTransfer();
 
             appendLog(
                     "Working directory selected: "
@@ -341,7 +349,28 @@ public class MainController {
                 }
             }
 
-            checkForInterruptedTransfer();
+            if (autoResumeTransfer) {
+
+                autoResumeTransfer = false;
+
+                if (!latestScanResult.remainingFiles().isEmpty()) {
+
+                    appendLog("Automatically resuming transfer...");
+
+                    startTransfer();
+
+                } else {
+
+                    appendLog("Transfer was already complete.");
+
+                    try {
+                        transferStateService.delete(
+                                pathOrCurrentDirectory(workDirectoryField.getText())
+                        );
+                    } catch (IOException ignored) {
+                    }
+                }
+            }
 
             Duration elapsed = Duration.between(
                     scanStartedAt,
@@ -1133,6 +1162,8 @@ public class MainController {
             );
 
             appendLog("Previous transfer loaded.");
+
+            autoResumeTransfer = true;
 
             scanSource();
 
