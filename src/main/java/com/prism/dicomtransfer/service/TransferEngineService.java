@@ -237,6 +237,17 @@ public class TransferEngineService {
                         listener
                 );
 
+                if (finalStatus == TransferState.Status.COMPLETED) {
+                    try {
+                        transferStateService.delete(configuration.workingDirectory());
+                    } catch (IOException exception) {
+                        listener.onLog(
+                                "Unable to delete transfer state: "
+                                        + exception.getMessage()
+                        );
+                    }
+                }
+
                 return new TransferResult(
                         files.size(),
                         successfulFileCount.get(),
