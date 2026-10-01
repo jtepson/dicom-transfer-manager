@@ -137,3 +137,39 @@
 .check-box {
     -fx-text-fill: #dce5ef;
 }
+
+.app-tab-pane {
+    -fx-background-color: transparent;
+    -fx-tab-min-width: 130px;
+}
+
+.app-tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-background-color: #18212b;
+    -fx-border-color: #293644;
+    -fx-border-radius: 6px 6px 0 0;
+    -fx-background-radius: 6px 6px 0 0;
+    -fx-padding: 8px 18px;
+    -fx-font-weight: bold;
+}
+
+.app-tab-pane > .tab-header-area > .headers-region > .tab > .tab-container > .tab-label {
+    -fx-text-fill: #8794a3;
+}
+
+.app-tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: #22303d;
+}
+
+.app-tab-pane > .tab-header-area > .headers-region > .tab:selected > .tab-container > .tab-label {
+    -fx-text-fill: #f4f7fb;
+}
+
+.app-tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: transparent;
+}
+
+.app-tab-pane > .tab-content-area {
+    -fx-background-color: transparent;
+    -fx-border-color: #293644;
+    -fx-border-radius: 0 0 8px 8px;
+}

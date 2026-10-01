@@ -22,6 +22,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
@@ -140,6 +141,21 @@ public class MainController {
     private TextField echoscuPathField;
 
     @FXML
+    private TabPane mainTabPane;
+
+    @FXML
+    private Label currentCallingAeValue;
+
+    @FXML
+    private Label currentCalledAeValue;
+
+    @FXML
+    private Label currentHostValue;
+
+    @FXML
+    private Label currentPortValue;
+
+    @FXML
     private void initialize() {
         portSpinner.setValueFactory(
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(
@@ -186,6 +202,21 @@ public class MainController {
 
         stopButton.setDisable(true);
         startButton.setDisable(true);
+
+        if (mainTabPane != null) {
+            mainTabPane.getSelectionModel().select(0);
+        }
+
+        callingAeField.textProperty().addListener(
+                (observable, oldValue, newValue) -> updateCurrentDestinationSummary());
+        calledAeField.textProperty().addListener(
+                (observable, oldValue, newValue) -> updateCurrentDestinationSummary());
+        hostField.textProperty().addListener(
+                (observable, oldValue, newValue) -> updateCurrentDestinationSummary());
+        portSpinner.valueProperty().addListener(
+                (observable, oldValue, newValue) -> updateCurrentDestinationSummary());
+
+        updateCurrentDestinationSummary();
 
         appendLog("Application started.");
 
@@ -1008,6 +1039,26 @@ public class MainController {
         batchSizeSpinner.setDisable(disabled);
         skipPreviouslySentCheckBox.setDisable(disabled);
         testConnectionButton.setDisable(disabled);
+    }
+
+    private void updateCurrentDestinationSummary() {
+        if (currentCallingAeValue == null) {
+            return;
+        }
+
+        String callingAe = callingAeField.getText();
+        String calledAe = calledAeField.getText();
+        String host = hostField.getText();
+        Integer port = portSpinner.getValue();
+
+        currentCallingAeValue.setText(
+                callingAe == null || callingAe.isBlank() ? "-" : callingAe.trim());
+        currentCalledAeValue.setText(
+                calledAe == null || calledAe.isBlank() ? "-" : calledAe.trim());
+        currentHostValue.setText(
+                host == null || host.isBlank() ? "-" : host.trim());
+        currentPortValue.setText(
+                port == null ? "-" : String.valueOf(port));
     }
 
     private void appendLog(String message) {
